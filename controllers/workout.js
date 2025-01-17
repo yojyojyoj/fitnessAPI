@@ -6,7 +6,7 @@ const auth = require('../auth.js');
 
 const {errorHandler} = require("../auth.js");
 
-module.exports.addWorkout = (req, res) => {
+/*module.exports.addWorkout = (req, res) => {
     // Validate request body
     if (!req.body.name || !req.body.duration) {
         return res.status(400).send({ 
@@ -36,19 +36,19 @@ module.exports.addWorkout = (req, res) => {
             }
         })
         .catch(error => errorHandler(error, req, res)); 
-};
+};*/
 
 
-/*module.exports.addWorkout = (req, res) => {
+module.exports.addWorkout = (req, res) => {
     try {
         // Ensure user is logged in
-        if (!req.user || !req.user._id) {
+        if (!req.user || !req.user.id) {
             return res.status(401).send({
                 success: false,
                 message: "Unauthorized: User not logged in.",
             });
         }
-        const userId = req.user._id;
+        const userId = req.user.id; // Get user ID from req.user
 
         // Validate request body
         const { name, duration } = req.body;
@@ -63,11 +63,11 @@ module.exports.addWorkout = (req, res) => {
         const newWorkout = new Workout({
             name,
             duration,
-            user: userId, // Add the userId to associate with the logged-in user
+            userId, // Associate workout with the logged-in user
         });
 
         // Check if the workout already exists for this user
-        Workout.findOne({ name, user: userId })
+        Workout.findOne({ name, userId })
             .then((existingWorkout) => {
                 if (existingWorkout) {
                     return res.status(409).send({
@@ -111,12 +111,14 @@ module.exports.addWorkout = (req, res) => {
             error: error.message,
         });
     }
-};*/
+};
+
+
 
 
 
 module.exports.getMyWorkouts = (req, res) => {
-    const userId = req.user._id; 
+    const userId = req.user.id; 
 
     Workout.find({ userId }) 
         .then(workout => {

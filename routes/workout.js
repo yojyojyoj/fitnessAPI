@@ -4,7 +4,7 @@ const {verify, verifyAdmin} = require("../auth.js");
 
 const router = express.Router();
 
-router.post("/addWorkout", workoutController.addWorkout);
+router.post("/addWorkout", verify, workoutController.addWorkout);
 
 router.get("/getMyWorkouts", verify, workoutController.getMyWorkouts);
 
