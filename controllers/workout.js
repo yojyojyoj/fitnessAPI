@@ -38,48 +38,85 @@ module.exports.addWorkout = (req, res) => {
         .catch(error => errorHandler(error, req, res)); 
 };
 
-// Checkout Function: 
-module.exports.AddToWorkouts = async (req, res) => {
+
+/*module.exports.addWorkout = (req, res) => {
     try {
-        
-        const userId = req.user.id; 
-        
+        // Ensure user is logged in
+        if (!req.user || !req.user._id) {
+            return res.status(401).send({
+                success: false,
+                message: "Unauthorized: User not logged in.",
+            });
+        }
+        const userId = req.user._id;
 
-        // Find the user's cart
-        const workout = await Workout.findOne({ userId });
-        if (!workout) {
-            return res.status(404).json({ message: 'Workout not found for the user.' });
+        // Validate request body
+        const { name, duration } = req.body;
+        if (!name || !duration) {
+            return res.status(400).send({
+                success: false,
+                message: "All fields (name, duration) are required.",
+            });
         }
 
-        // Check if cart contains items
-        if (!workout.cartItems || workout.cartItems.length === 0) {
-            return res.status(400).json({ message: 'Workout is empty. Cannot proceed to checkout.' });
-        }
-
-        // Create a new Order
+        // Create a new workout with userId
         const newWorkout = new Workout({
-            userId,
-            productsOrdered: cart.cartItems.map(item => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                subtotal: item.subtotal
-            })),
-            totalPrice: cart.totalPrice
+            name,
+            duration,
+            user: userId, // Add the userId to associate with the logged-in user
         });
 
-        // Save the order
-        const savedOrder = await newOrder.save();
-
-        // Respond to client
-        res.status(201).json({ message: "Ordered Successfully" });
-    } catch (err) {
-        // Catch and handle errors
-        res.status(500).json({ error: "No items to Checkout" });
+        // Check if the workout already exists for this user
+        Workout.findOne({ name, user: userId })
+            .then((existingWorkout) => {
+                if (existingWorkout) {
+                    return res.status(409).send({
+                        success: false,
+                        message: "Workout with this name already exists for the user.",
+                    });
+                } else {
+                    // Save the new workout
+                    return newWorkout
+                        .save()
+                        .then((result) =>
+                            res.status(201).send({
+                                success: true,
+                                message: "Workout added successfully.",
+                                result,
+                            })
+                        )
+                        .catch((error) => {
+                            console.error(error);
+                            res.status(500).send({
+                                success: false,
+                                message: "Error saving workout.",
+                                error: error.message,
+                            });
+                        });
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+                res.status(500).send({
+                    success: false,
+                    message: "Error finding workout.",
+                    error: error.message,
+                });
+            });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({
+            success: false,
+            message: "An unexpected error occurred.",
+            error: error.message,
+        });
     }
-};
+};*/
+
+
 
 module.exports.getMyWorkouts = (req, res) => {
-    const userId = req.user.id; 
+    const userId = req.user._id; 
 
     Workout.find({ userId }) 
         .then(workout => {
